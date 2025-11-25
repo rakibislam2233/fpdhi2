@@ -1,0 +1,106 @@
+@font-face{
+  font-family: NikoshBAN;
+  src:url('http://mchdrhis.icddrb.org:8080/dhis2cdn/NikoshBAN.ttf') format("truetype")
+      url('http://mchdrhis.icddrb.org:8080/dhis2cdn/NikoshBAN.woff') format("woff");
+  
+}
+/* @import './fonts/Kiron/Kiron.css'; */
+.t-48{
+  margin-top: 48px;
+}
+
+.trigger{
+  padding: 0 0 0 10px;
+}
+
+#slogan{
+  padding-top: 5px;
+  border:2px solid black;
+  text-align: center;
+  font-weight: bold;
+}
+
+.logo{
+  text-align: center;
+}
+
+.mistables table {
+  font-size: 13px;
+  zoom: 1;
+  padding: 0px 0px !important;
+}
+.mistables table tr,td{
+  word-break: normal !important;
+  color: black;
+  text-align: left;
+  font-family: "NikoshBAN", sans-serif;
+  padding: 3px;
+}
+.ant-table-thead > tr > th{
+  padding: 0px 0px 0px 0px !important;
+  background: #fff !important;
+} 
+.ant-table-tbody > tr > td{
+  padding: 0 0 !important;
+}
+.mistables table th.r-th {
+  vertical-align: bottom;
+  text-align: left !important;
+  width: 100%;
+}
+th.r-th>div{
+  width: 100% !important;
+}
+.mistables th{
+  font-size: 17px;
+  white-space: pre;
+}
+.mistables thead tr>th:not(.rm-b-t):not(.rm-b-t1):not(.rm-b-t2), .mistables tbody td{
+  border: 1px solid #000 !important;
+}
+.mistables th.r-th>div {
+  writing-mode: vertical-rl;
+  transform: translate(.01em,0) rotate(180deg);
+  vertical-align: bottom;
+  width: 100%;
+  /* display: inline-block;
+  white-space: nowrap;
+  writing-mode: tb; */
+}
+.mis4tbl tbody>tr:last-child{
+  background-color: #f8f4d9;
+  /* aqua */
+}
+.rm-b-t{
+  border-bottom-color: transparent !important;
+  border-right-color: #000 !important;
+  border-left: 1px solid #000 !important;
+}
+.rm-b-t1{
+  border-bottom: 0px #fff !important;
+  border-right: 1px solid #000 !important;
+  border-left: 1px solid #000 !important;
+  border-top: 1px solid #000 !important;
+}
+.rm-b-t2{
+  border-top: 1px solid #000 !important;
+  border-right: 1px solid #000 !important;
+  border-left: 1px solid #000 !important;
+  border-bottom: 1px solid #fff !important;
+}
+.cl-no{
+  text-align: center !important;
+  min-width: 55px;
+}
+.form-header{
+  text-align: center;
+  font-weight: bold;
+}
+.ex-btn {
+  margin-top: 4px;
+  background-color: crimson !important;
+  color:#fff !important;
+}
+.ant-tabs-tab{
+  font-weight: bold !important;
+}
