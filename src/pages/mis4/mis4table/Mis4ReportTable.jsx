@@ -1,5 +1,4 @@
 import { Table, Tabs } from "antd";
-import React from "react";
 import MisReportHeader from "../../../components/MisReportHeader";
 import {
   mis4columns_child_birth,

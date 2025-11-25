@@ -7,8 +7,8 @@ import PrintIframe from "./PrintIframe";
 const PrintBtn = () => {
   const dispatch = useDispatch();
   const { iframeContent, header } = useSelector(state => ({
-    iframeContent: state.misform4aggr.printcontent,
-    header: state.misform4aggr.header,
+    iframeContent: state.ui?.misForm4Aggr?.printcontent || "",
+    header: state.ui?.misForm4Aggr?.header || "",
   }));
 
   const exportToPdf = (e) => {

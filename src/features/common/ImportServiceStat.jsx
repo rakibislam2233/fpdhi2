@@ -5,14 +5,12 @@ import { connect } from "react-redux";
 import _ from "underscore";
 import { API_CONSTANT_MAP } from "../utils/BaseApi";
 import {
-  disableLoading,
-  enableLoading,
-  getOrgUnit,
-  getSSData,
-  resetDhis2Data,
-  resetSSData,
-  send2Dhis2SS,
-} from "../redux/actions/import.ss.action";
+  useEnableLoadingMutation,
+  useDisableLoadingMutation,
+  useGetOrgUnitsForSSQuery,
+  useGetSSDataQuery,
+  useSendToDhis2Mutation,
+} from "../../redux/api/importSSApi";
 
 const Option = Select.Option;
 const { MonthPicker } = DatePicker;
@@ -294,11 +292,11 @@ export class ImportServiceStat extends Component {
 const WrappedImportServiceStat = Form.create()(ImportServiceStat);
 
 const mapStateToProps = (state) => ({
-  orgUnit: state.importssreducer.orgUnit,
-  modifiedOrgUnit: state.importssreducer.modifiedOrgUnit,
-  dataResponseSS: state.importssreducer.dataResponseSS,
-  dataResponseDhis2: state.importssreducer.dataResponseDhis2,
-  loading: state.importssreducer.loading,
+  orgUnit: state.ui?.importssreducer?.orgUnit || [],
+  modifiedOrgUnit: state.ui?.importssreducer?.modifiedOrgUnit || [],
+  dataResponseSS: state.ui?.importssreducer?.dataResponseSS || [],
+  dataResponseDhis2: state.ui?.importssreducer?.dataResponseDhis2 || [],
+  loading: state.ui?.importssreducer?.loading || false,
 });
 
 const mapDispatchToProps = {

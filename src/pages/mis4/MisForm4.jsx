@@ -1,17 +1,13 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import {
+  useGetOrganisationUnitsByUserQuery,
+  useGetUpazilaByUserQuery,
+  useGetZillaByUserQuery,
+  useGetZillasQuery,
+} from "../../../src/redux/api/orgUnitApi";
 import _ from "underscore";
 import { Row, Select, Button, Form, DatePicker, BackTop } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
-import { fetchUpazilaByUser } from "../../../src/redux/actions/getgeo.action";
-import {
-  fetchUserOrgUnits,
-  fetchUserDataViewZilla,
-  fetchMis2DataSet,
-  fetchMis3DataSet,
-  addMIS4DataSet,
-  setReportHeader,
-} from "../../../src/redux/actions/misform.action";
 import {
   getResult,
   makeMis4TableFormatAggr,
@@ -24,10 +20,8 @@ import {
 } from "../../../src/utils/Utils.jsx";
 import PrintBtn from "../../components/PrintBtnAggr";
 import Mis4ReportTable from "./mis4table/Mis4ReportTable";
-
 const Option = Select.Option;
 const { MonthPicker } = DatePicker;
-const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const MisForm4 = () => {
   const [form] = Form.useForm();
@@ -41,18 +35,25 @@ const MisForm4 = () => {
     mis3reportdata,
     mis4FinalDataAggr,
   } = useSelector((state) => ({
-    zilla: state.misform4aggr.userDataViewZilla,
-    upazila: state.getgeo.userUpazila,
-    period: state.misform4aggr.month,
-    userOrgUnits: state.misform4aggr.userOrgUnits,
-    mis2reportdata: state.misform4aggr.mis2reportdata,
-    mis3reportdata: state.misform4aggr.mis3reportdata,
-    mis4FinalDataAggr: state.misform4aggr.mis4FinalDataAggr,
+    zilla: state.ui?.misForm4Aggr?.userDataViewZilla || "",
+    upazila: state.getgeo?.userUpazila || [], // This might still need RTK Query data
+    period: state.ui?.misForm4Aggr?.month || "",
+    userOrgUnits: state.ui?.misForm4Aggr?.userOrgUnits || [],
+    mis2reportdata: state.ui?.misForm4Aggr?.mis2reportdata || [],
+    mis3reportdata: state.ui?.misForm4Aggr?.mis3reportdata || [],
+    mis4FinalDataAggr: state.ui?.misForm4Aggr?.mis4FinalDataAggr || {},
   }));
+  const { data: upazillaReponse } = useGetUpazilaByUserQuery();
+  const upazillaData = upazillaReponse?.organisationUnits[0];
+  console.log("upazillaReponse", upazillaData);
+
+  const { data: userData, isLoading: userLoading } =
+    useGetOrganisationUnitsByUserQuery();
 
   useEffect(() => {
-    dispatch(fetchUpazilaByUser());
-  }, [dispatch]);
+    // The data is now automatically fetched by the RTK Query hook
+    // You can handle the data or loading state here if needed
+  }, [userData]);
 
   const handleSubmit = (values) => {
     var period = values["monthpicker"].format("YYYYMM"),
@@ -247,11 +248,7 @@ const MisForm4 = () => {
               ]}
             >
               <Select size="large" style={{ width: 200 }}>
-                {upazila?.map((e, i) => (
-                  <Option key={e.id}>
-                    {rejectSpecificWord(e.displayName, "upazila")}
-                  </Option>
-                ))}
+                <Option value={upazillaData?.id}>{upazillaData?.displayName}</Option>
               </Select>
             </Form.Item>
             <Form.Item

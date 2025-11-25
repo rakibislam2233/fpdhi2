@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { fetchZillas } from "../../redux/actions/getgeo.action";
+import { useGetZillasQuery } from "../../redux/api/orgUnitApi";
 import { rejectSpecificWord } from "../../utils/Utils.jsx";
 
 const { MonthPicker } = DatePicker;

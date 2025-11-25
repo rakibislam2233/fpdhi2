@@ -7,13 +7,13 @@ import "./App.css";
 import MisForm4 from "./pages/mis4/MisForm4";
 import MisForm5 from "./pages/mis5/MisForm5";
 import Report from "./features/reports/Report";
-import { navbarToggle } from "./redux/slices/navbarSlice";
+import { navbarToggle } from "./redux/actions/simpleActions";
 import { SS_IMPLEMENTED } from "./utils/SsImplemented";
 const { Header, Sider, Content } = Layout;
 
 const App = () => {
   const dispatch = useDispatch();
-  const menuCollapsed = useSelector((state) => state.navBar.toggleOpen);
+  const menuCollapsed = useSelector((state) => state.ui?.navBar?.toggleOpen || false);
   // Placeholder for user data that was previously provided by DHIS2
   const userDataViewZillaCode = useSelector(
     (state) => state.d2ui?.userDataViewZillaCode || "01"
