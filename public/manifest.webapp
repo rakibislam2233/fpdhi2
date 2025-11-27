@@ -2,17 +2,17 @@
   "version": "0.1",
   "name": "DGFP MIS Report Latest",
   "description": "This app is a Packaged App",
-  "launch_path": "/index.html",
+  "launch_path": "index.html",
   "appType": "APP",
   "icons": {
-    "16": "./favicon.ico",
-    "48": "./favicon.ico",
-    "128": "./favicon.ico"
+    "16": "favicon.ico",
+    "48": "favicon.ico",
+    "128": "favicon.ico"
   },
   "default_locale": "en",
   "activities": {
     "dhis": {
-      "href": "http://fpdhis2.dgfp.gov.bd:8080/dhis"
+      "href": "*"
     }
   }
 }
