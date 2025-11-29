@@ -71,7 +71,7 @@ export const orgUnitApi = baseApi.injectEndpoints({
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:(Gov)`,
       providesTags: ["GovOrg"],
     }),
-   // NGO organizations by parent
+    // NGO organizations by parent
     getNgoByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:(NGO)`,
@@ -82,6 +82,24 @@ export const orgUnitApi = baseApi.injectEndpoints({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:(Multi-sectoral)`,
       providesTags: ["MultiSectoral"],
+    }),
+    getUserOrgUnits: builder.query({
+      query: (orgUnitId) =>
+        `/api/29/organisationUnits.json?userOnly=true&fields=id,dataSets,displayName,children&paging=false`,
+      providesTags: ["OrganisationUnit"],
+    }),
+
+    getUserDataViewZilla: builder.query({
+      query: (mis2Id) =>
+        `/api/29/organisationUnits/${mis2Id}?includeAncestors=true&filter=level:eq:3`,
+      providesTags: ["Zilla"],
+    }),
+
+    // Children সহ organization unit fetch করার জন্য
+    getOrgUnitWithChildren: builder.query({
+      query: (orgUnitId) =>
+        `/api/29/organisationUnits/${orgUnitId}?fields=id,name,displayName,children[id,name,displayName,dataSets[id]]`,
+      providesTags: ["OrganisationUnit"],
     }),
   }),
 });
@@ -100,4 +118,7 @@ export const {
   useGetGovByParentQuery,
   useGetNgoByParentQuery,
   useGetMultiSectoralByParentQuery,
+  useGetUserOrgUnitsQuery,
+  useGetUserDataViewZillaQuery,
+  useGetOrgUnitWithChildrenQuery,
 } = orgUnitApi;

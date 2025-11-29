@@ -39,18 +39,21 @@ export const dataApi = baseApi.injectEndpoints({
 
     // Additional dataset endpoints
     getMis2DataSet: builder.query({
-      query: ({ orgUnitId, period }) =>
-        `/api/29/dataValueSets.json?dataSet=${
+      query: ({ orgUnitId, period }) => {
+        // orgUnitId এখন "&orgUnit=xxx&orgUnit=yyy" format এ আসবে
+        return `/api/29/dataValueSets.json?dataSet=${
           import.meta.env.VITE_MIS2_DATASET_ID
-        }&period=${period}&orgUnit=${orgUnitId}`,
+        }&period=${period}${orgUnitId}`; // concat করলাম
+      },
       providesTags: ["MisForm"],
     }),
 
     getMis3DataSet: builder.query({
-      query: ({ orgUnitId, period }) =>
-        `/api/29/dataValueSets.json?dataSet=${
+      query: ({ orgUnitId, period }) => {
+        return `/api/29/dataValueSets.json?dataSet=${
           import.meta.env.VITE_MIS3_DATASET_ID
-        }&period=${period}&orgUnit=${orgUnitId}`,
+        }&period=${period}${orgUnitId}`;
+      },
       providesTags: ["MisForm"],
     }),
   }),
