@@ -21,12 +21,17 @@ export const orgUnitApi = baseApi.injectEndpoints({
         "/api/29/organisationUnits?userDataViewOnly=true&paging=false",
       providesTags: ["Upazila"],
     }),
-
     // Zillas (level 3)
     getZillas: builder.query({
       query: () =>
         "/api/organisationUnits?level=3&paging=false&fields=id,name&filter=name:like:District",
       providesTags: ["Zilla"],
+    }),
+    // Upazillas by parent
+    getUpazillasByParent: builder.query({
+      query: (parentId) =>
+        `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:4&paging=false&fields=id,name&filter=name:like:Upazila`,
+      providesTags: ["Upazila"],
     }),
 
     // Organisation Units by user
@@ -42,48 +47,36 @@ export const orgUnitApi = baseApi.injectEndpoints({
       providesTags: ["UserDataView"],
     }),
 
-    // Upazillas by parent
-    getUpazillasByParent: builder.query({
-      query: (parentId) =>
-        `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:4&paging=false&fields=id,name&filter=name:like:Upazila`,
-      providesTags: ["Upazila"],
-    }),
-
     // Unions by parent
     getUnionsByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:Union`,
       providesTags: ["Union"],
     }),
-
     // Pouroshovas by parent
     getPouroshovasByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:Pouroshova`,
       providesTags: ["Pouroshova"],
     }),
-
     // Sadars by parent
     getSadarByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:Sadar`,
       providesTags: ["Sadar"],
     }),
-
     // Gov organizations by parent
     getGovByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:(Gov)`,
       providesTags: ["GovOrg"],
     }),
-
-    // NGO organizations by parent
+   // NGO organizations by parent
     getNgoByParent: builder.query({
       query: (parentId) =>
         `/api/organisationUnits?filter=parent.id:eq:${parentId}&filter=level:eq:5&paging=false&fields=id,name&filter=name:like:(NGO)`,
       providesTags: ["Ngo"],
     }),
-
     // Multi-sectoral organizations by parent
     getMultiSectoralByParent: builder.query({
       query: (parentId) =>

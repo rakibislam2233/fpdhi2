@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 // Data and MIS Forms API
 export const dataApi = baseApi.injectEndpoints({
@@ -21,30 +21,36 @@ export const dataApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["DataValue"],
     }),
-
     // MIS Form specific endpoints
     getMis4Data: builder.query({
-      query: ({ orgUnitId, period }) => 
-        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${import.meta.env.VITE_MIS4_DATASET_ID}`,
+      query: ({ orgUnitId, period }) =>
+        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${
+          import.meta.env.VITE_MIS4_DATASET_ID
+        }`,
       providesTags: ["MisForm"],
     }),
-    
     getMis5Data: builder.query({
-      query: ({ orgUnitId, period }) => 
-        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${import.meta.env.VITE_MIS5_DATASET_ID}`,
+      query: ({ orgUnitId, period }) =>
+        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${
+          import.meta.env.VITE_MIS5_DATASET_ID
+        }`,
       providesTags: ["MisForm"],
     }),
-    
+
     // Additional dataset endpoints
     getMis2DataSet: builder.query({
-      query: ({ orgUnitId, period }) => 
-        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${import.meta.env.VITE_MIS2_DATASET_ID}`,
+      query: ({ orgUnitId, period }) =>
+        `/api/29/dataValueSets.json?dataSet=${
+          import.meta.env.VITE_MIS2_DATASET_ID
+        }&period=${period}&orgUnit=${orgUnitId}`,
       providesTags: ["MisForm"],
     }),
-    
+
     getMis3DataSet: builder.query({
-      query: ({ orgUnitId, period }) => 
-        `/api/dataValueSets?orgUnit=${orgUnitId}&period=${period}&dataSet=${import.meta.env.VITE_MIS3_DATASET_ID}`,
+      query: ({ orgUnitId, period }) =>
+        `/api/29/dataValueSets.json?dataSet=${
+          import.meta.env.VITE_MIS3_DATASET_ID
+        }&period=${period}&orgUnit=${orgUnitId}`,
       providesTags: ["MisForm"],
     }),
   }),

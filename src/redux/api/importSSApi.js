@@ -9,7 +9,6 @@ export const importSSApi = baseApi.injectEndpoints({
         `/api/organisationUnits?userOnly=true&fields=id,name,code,dataSets,displayName&filter=dataSets.id:eq:${datasetId}&paging=false/`,
       providesTags: ["ImportSS"],
     }),
-
     // Get MIS3 organisation units for SS import
     getOrgUnitsForMIS3: builder.query({
       query: () =>
@@ -18,7 +17,6 @@ export const importSSApi = baseApi.injectEndpoints({
         }`,
       providesTags: ["ImportSS"],
     }),
-
     // Get SS data
     getSSData: builder.query({
       query: (params) => {
@@ -27,7 +25,6 @@ export const importSSApi = baseApi.injectEndpoints({
       },
       providesTags: ["ImportSS"],
     }),
-
     // Send data to DHIS2
     sendToDhis2: builder.mutation({
       query: (body) => ({
@@ -37,7 +34,6 @@ export const importSSApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["ImportSS"],
     }),
-
     // Enable loading action (for UI state)
     enableLoading: builder.mutation({
       query: () => ({
@@ -46,7 +42,6 @@ export const importSSApi = baseApi.injectEndpoints({
         body: {},
       }),
     }),
-
     // Disable loading action (for UI state)
     disableLoading: builder.mutation({
       query: () => ({

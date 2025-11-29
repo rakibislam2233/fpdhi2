@@ -1,284 +1,278 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  useGetOrganisationUnitsByUserQuery,
-  useGetUpazilaByUserQuery,
-  useGetZillaByUserQuery,
-  useGetZillasQuery,
-} from "../../../src/redux/api/orgUnitApi";
+import React, { useState, useEffect, useMemo } from "react";
+import { Form, Button, DatePicker, Spin, Row } from "antd";
 import _ from "underscore";
-import { Row, Select, Button, Form, DatePicker, BackTop } from "antd";
 import {
-  getResult,
-  makeMis4TableFormatAggr,
-} from "../../../src/utils/DataSerializer.jsx";
+  useGetUpazilaByUserQuery,
+  useGetUnionsByParentQuery,
+  useGetPouroshovasByParentQuery,
+  useGetSadarByParentQuery,
+  useGetGovByParentQuery,
+  useGetNgoByParentQuery,
+  useGetMultiSectoralByParentQuery,
+} from "../../redux/api/orgUnitApi";
 import {
-  mergeByProperty,
-  replaceOrgUnitId,
-  orgUnitDataSets,
-  rejectSpecificWord,
-} from "../../../src/utils/Utils.jsx";
-import PrintBtn from "../../components/PrintBtnAggr";
-import Mis4ReportTable from "./mis4table/Mis4ReportTable";
-const Option = Select.Option;
+  useGetMis2DataSetQuery,
+  useGetMis3DataSetQuery,
+} from "../../redux/api/dataApi";
+import PrintBtn from "../../components/PrintBtn";
+import { rejectSpecificWord } from "../../utils/Utils";
+import { makeMis4TableFormatAggr } from "../../utils/DataSerializer";
+
 const { MonthPicker } = DatePicker;
 
 const MisForm4 = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
-  const {
-    zilla,
-    upazila,
-    period,
-    userOrgUnits,
-    mis2reportdata,
-    mis3reportdata,
-    mis4FinalDataAggr,
-  } = useSelector((state) => ({
-    zilla: state.ui?.misForm4Aggr?.userDataViewZilla || "",
-    upazila: state.getgeo?.userUpazila || [], // This might still need RTK Query data
-    period: state.ui?.misForm4Aggr?.month || "",
-    userOrgUnits: state.ui?.misForm4Aggr?.userOrgUnits || [],
-    mis2reportdata: state.ui?.misForm4Aggr?.mis2reportdata || [],
-    mis3reportdata: state.ui?.misForm4Aggr?.mis3reportdata || [],
-    mis4FinalDataAggr: state.ui?.misForm4Aggr?.mis4FinalDataAggr || {},
-  }));
-  const { data: upazillaReponse } = useGetUpazilaByUserQuery();
-  const upazillaData = upazillaReponse?.organisationUnits[0];
-  console.log("upazillaReponse", upazillaData);
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [finalReportData, setFinalReportData] = useState([]);
+  const [monthName, setMonthName] = useState("");
 
-  const { data: userData, isLoading: userLoading } =
-    useGetOrganisationUnitsByUserQuery();
+  const { data: userUpazilaData, isLoading: loadingUser } =
+    useGetUpazilaByUserQuery();
+  const upazila = userUpazilaData?.organisationUnits?.[0];
+  const selectedUpazila = upazila?.id || "";
+
+  // এইটাই মূল ফিক্স – useMemo দিয়ে স্টেবল ভ্যালু
+  const upazilaName = useMemo(() => {
+    if (!upazila) return "";
+    return rejectSpecificWord(
+      upazila.name || upazila.displayName || "",
+      "upazila"
+    );
+  }, [upazila]);
+
+  const { data: unions } = useGetUnionsByParentQuery(selectedUpazila, {
+    skip: !selectedUpazila,
+  });
+  const { data: pouroshovas } = useGetPouroshovasByParentQuery(
+    selectedUpazila,
+    { skip: !selectedUpazila }
+  );
+  const { data: sadars } = useGetSadarByParentQuery(selectedUpazila, {
+    skip: !selectedUpazila,
+  });
+  const { data: govs } = useGetGovByParentQuery(selectedUpazila, {
+    skip: !selectedUpazila,
+  });
+  const { data: ngos } = useGetNgoByParentQuery(selectedUpazila, {
+    skip: !selectedUpazila,
+  });
+  const { data: multis } = useGetMultiSectoralByParentQuery(selectedUpazila, {
+    skip: !selectedUpazila,
+  });
+
+  const allOrgUnits = useMemo(
+    () => [
+      ...(unions?.organisationUnits || []),
+      ...(pouroshovas?.organisationUnits || []),
+      ...(sadars?.organisationUnits || []),
+      ...(govs?.organisationUnits || []),
+      ...(ngos?.organisationUnits || []),
+      ...(multis?.organisationUnits || []),
+    ],
+    [unions, pouroshovas, sadars, govs, ngos, multis]
+  );
+
+  const orgUnitParam =
+    allOrgUnits.length > 0
+      ? allOrgUnits.map((ou) => `&orgUnit=${ou.id}`).join("")
+      : "";
+
+  const { data: mis2Raw, isFetching: loading2 } = useGetMis2DataSetQuery(
+    { orgUnitId: orgUnitParam, period: selectedPeriod },
+    { skip: !selectedUpazila || !selectedPeriod || orgUnitParam === "" }
+  );
+
+  const { data: mis3Raw, isFetching: loading3 } = useGetMis3DataSetQuery(
+    { orgUnitId: orgUnitParam, period: selectedPeriod },
+    { skip: !selectedUpazila || !selectedPeriod || orgUnitParam === "" }
+  );
 
   useEffect(() => {
-    // The data is now automatically fetched by the RTK Query hook
-    // You can handle the data or loading state here if needed
-  }, [userData]);
+    if (
+      !mis2Raw?.dataValues ||
+      !mis3Raw?.dataValues ||
+      allOrgUnits.length === 0
+    ) {
+      if (selectedPeriod) setFinalReportData([]);
+      return;
+    }
 
-  const handleSubmit = (values) => {
-    var period = values["monthpicker"].format("YYYYMM"),
-      orgUnitId = values["upazila"];
-    dispatch(fetchUserOrgUnits(orgUnitId)).then(() => {
-      var orgUnitDataSetList = orgUnitDataSets(userOrgUnits);
-      Promise.all([
-        dispatch(
-          fetchUserDataViewZilla(
-            getResult(orgUnitDataSetList.mis2, "displayName", "Union")[0].id
-          )
-        ),
-        dispatch(fetchMis2DataSet(orgUnitDataSetList.mis2, period)),
-        dispatch(fetchMis3DataSet(orgUnitDataSetList.mis3, period)),
-      ]).then(() => {
-        var mis2ByOrgUnit = _.groupBy(mis2reportdata, "orgUnit");
-        var mis3ByOrgUnit = _.groupBy(mis3reportdata, "orgUnit");
-        console.log(orgUnitDataSetList, mis3ByOrgUnit);
-        var mis3OrgUnit = _.pluck(orgUnitDataSetList.mis3, "id");
-        _.map(orgUnitDataSetList.mis2, (d) => {
-          var unionId = d.id;
-          //ADDING THOSE UNION WHOSE DATA has NOT been ENTERED YET
-          if (!_.has(mis2ByOrgUnit, unionId)) {
-            mis2ByOrgUnit[unionId] = [];
+    const mis2 = mis2Raw.dataValues || [];
+    const mis3 = mis3Raw.dataValues || [];
+
+    let mis2ByOrgUnit = _.groupBy(mis2, "orgUnit");
+    const mis3ByOrgUnit = _.groupBy(mis3, "orgUnit");
+
+    const mis2Units = allOrgUnits.filter((ou) =>
+      ou.dataSets?.some((ds) => ds.id === import.meta.env.VITE_MIS2_DATASET_ID)
+    );
+    const mis3Units = allOrgUnits.filter((ou) =>
+      ou.dataSets?.some((ds) => ds.id === import.meta.env.VITE_MIS3_DATASET_ID)
+    );
+
+    const mis3Ids = _.pluck(mis3Units, "id");
+
+    mis2Units.forEach((unit) => {
+      const unionId = unit.id;
+      if (!mis2ByOrgUnit[unionId]) mis2ByOrgUnit[unionId] = [];
+
+      if (_.contains(mis3Ids, unionId)) {
+        mis2ByOrgUnit[unionId] = mis2ByOrgUnit[unionId].concat(
+          mis3ByOrgUnit[unionId] || []
+        );
+      } else {
+        const childrenIds =
+          _.chain(unit.children).pluck("id").flatten().value() || [];
+        const matchedChildren = _.intersection(childrenIds, mis3Ids);
+
+        matchedChildren.forEach((childId) => {
+          const facility = _.findWhere(mis3Units, { id: childId });
+
+          if (
+            facility &&
+            !facility.name.includes("(NGO)") &&
+            !facility.name.includes("(Multi-Sectoral)")
+          ) {
+            mis2ByOrgUnit[unionId] = mis2ByOrgUnit[unionId].concat(
+              mis3ByOrgUnit[childId] || []
+            );
           }
-          //MERGING WITH THOSE UNION WHO COMPLETES BOTH MIS2, MIS3
-          if (_.contains(mis3OrgUnit, unionId)) {
-            mis2ByOrgUnit[unionId].push(mis3ByOrgUnit[d.id]);
-            mis2ByOrgUnit[unionId] = _.flatten(mis2ByOrgUnit[unionId]);
+
+          if (
+            facility &&
+            (facility.name.includes("(NGO)") ||
+              facility.name.includes("(Multi-Sectoral)"))
+          ) {
+            mis2ByOrgUnit[childId] = (mis2ByOrgUnit[childId] || []).concat(
+              mis3ByOrgUnit[childId] || []
+            );
           }
-          //MERGING WITH CHILDREN - FWC,UH&FWC(GOV) WITH UNION
-          else {
-            var children = _.pluck(d.children, "id");
-            var mergedId = _.intersection(mis3OrgUnit, children);
-            // console.log(children, mergedId, orgUnitDataSetList);
 
-            if (mergedId.length) {
-              _.map(mergedId, (d) => {
-                var _others = _.findWhere(orgUnitDataSetList.mis3, {
-                  id: d,
-                }); //Except NGOS and MultiSectoral
+          const childData = mis3ByOrgUnit[childId] || [];
+          const isUHFWCorFWC = /\\(UH&FWC\\)|\\(FWC\\)|\\(UHC\\)/.test(
+            facility?.name || ""
+          );
+          const isMCWC = facility?.name.includes("(MCWC)");
 
-                if (
-                  !_others.displayName.endsWith("(NGO)") &&
-                  !_others.displayName.endsWith("(Multi-Sectoral)")
-                ) {
-                  if (_.has(mis2ByOrgUnit, unionId)) {
-                    mis2ByOrgUnit[unionId].push(mis3ByOrgUnit[d]);
-                  } else {
-                    mis2ByOrgUnit[unionId] = mis3ByOrgUnit[d];
-                  }
-
-                  mis2ByOrgUnit[unionId] = _.flatten(mis2ByOrgUnit[unionId]);
-                }
-                //CHECK NGOS,MULTISECTORAL
-                if (
-                  _others.displayName.endsWith("(NGO)") ||
-                  _others.displayName.endsWith("(Multi-Sectoral)")
-                ) {
-                  if (_.has(mis2ByOrgUnit, _others.id)) {
-                    console.log(
-                      "(NGO)HAS",
-                      mis2ByOrgUnit,
-                      mis3ByOrgUnit[_others.id]
-                    );
-                    // mis2ByOrgUnit[_others.id].push(mis3ByOrgUnit[_others.id]);
-                  } else {
-                    console.log(
-                      "(NGO)NOTHAS",
-                      mis2ByOrgUnit,
-                      mis3ByOrgUnit[_others.id]
-                    );
-                    mis2ByOrgUnit[_others.id] = mis3ByOrgUnit[_others.id];
-                  }
-
-                  mis2ByOrgUnit[_others.id] = _.flatten(
-                    mis2ByOrgUnit[_others.id]
-                  );
-                }
-                //c236
-                var unionFacility = _.findWhere(orgUnitDataSetList.mis3, {
-                  id: d,
-                }); //UH&FWC
-
-                if (
-                  unionFacility.displayName.endsWith("(UH&FWC)") ||
-                  unionFacility.displayName.endsWith("(FWC)") ||
-                  unionFacility.displayName.endsWith("(UHC)")
-                ) {
-                  var cElement236 = _.findWhere(mis3ByOrgUnit[d], {
-                    dataElement: "RASKJrsiQeD",
-                    categoryOptionCombo: "y8qayP3216s",
-                  }); //-c236
-
-                  if (!_.isUndefined(cElement236)) {
-                    mis2ByOrgUnit[unionId].push({
-                      dataElement: "RASKJrsiQeD",
-                      categoryOptionCombo: "y8qayP3216s-c236",
-                      attributeOptionCombo: cElement236.attributeOptionCombo,
-                      value: cElement236.value,
-                      period: cElement236.period,
-                      orgUnit: cElement236.orgUnit,
-                    });
-                  }
-                }
-                //c237, c238, c239
-                if (unionFacility.displayName.endsWith("(MCWC)")) {
-                  var cElement237 = _.findWhere(mis3ByOrgUnit[d], {
-                    dataElement: "RASKJrsiQeD",
-                    categoryOptionCombo: "y8qayP3216s",
-                  }); //-c237
-                  var cElement238 = _.findWhere(mis3ByOrgUnit[d], {
-                    dataElement: "qOAT1tBQQag",
-                    categoryOptionCombo: "y8qayP3216s",
-                  }); //-c238
-                  var cElement239 = _.findWhere(mis3ByOrgUnit[d], {
-                    dataElement: "mJO7Kby4sae",
-                    categoryOptionCombo: "y8qayP3216s",
-                  }); //-c239
-
-                  if (!_.isUndefined(cElement237)) {
-                    mis2ByOrgUnit[unionId].push({
-                      dataElement: "RASKJrsiQeD",
-                      categoryOptionCombo: "y8qayP3216s-c237",
-                      attributeOptionCombo: cElement237.attributeOptionCombo,
-                      value: cElement237.value,
-                      period: cElement237.period,
-                      orgUnit: cElement237.orgUnit,
-                    });
-                  }
-                  if (!_.isUndefined(cElement238)) {
-                    mis2ByOrgUnit[unionId].push({
-                      dataElement: "qOAT1tBQQag",
-                      categoryOptionCombo: "y8qayP3216s-c238",
-                      attributeOptionCombo: cElement238.attributeOptionCombo,
-                      value: cElement238.value,
-                      period: cElement238.period,
-                      orgUnit: cElement238.orgUnit,
-                    });
-                  }
-                  if (!_.isUndefined(cElement239)) {
-                    mis2ByOrgUnit[unionId].push({
-                      dataElement: "mJO7Kby4sae",
-                      categoryOptionCombo: "y8qayP3216s-c239",
-                      attributeOptionCombo: cElement239.attributeOptionCombo,
-                      value: cElement239.value,
-                      period: cElement239.period,
-                      orgUnit: cElement239.orgUnit,
-                    });
-                  }
-                }
+          childData.forEach((dv) => {
+            if (
+              dv.dataElement === "RASKJrsiQeD" &&
+              dv.categoryOptionCombo === "y8qayP3216s"
+            ) {
+              const newCOC = isUHFWCorFWC
+                ? "y8qayP3216s-c236"
+                : "y8qayP3216s-c237";
+              mis2ByOrgUnit[unionId].push({
+                ...dv,
+                categoryOptionCombo: newCOC,
               });
             }
-          }
+            if (isMCWC) {
+              if (
+                dv.dataElement === "qOAT1tBQQag" &&
+                dv.categoryOptionCombo === "y8qayP3216s"
+              )
+                mis2ByOrgUnit[unionId].push({
+                  ...dv,
+                  categoryOptionCombo: "y8qayP3216s-c238",
+                });
+              if (
+                dv.dataElement === "mJO7Kby4sae" &&
+                dv.categoryOptionCombo === "y8qayP3216s"
+              )
+                mis2ByOrgUnit[unionId].push({
+                  ...dv,
+                  categoryOptionCombo: "y8qayP3216s-c239",
+                });
+            }
+          });
         });
-        var mergeOrgList = mergeByProperty(
-          orgUnitDataSetList.mis2,
-          orgUnitDataSetList.mis3,
-          "id"
-        );
-
-        var mis2ByOrgUnit = replaceOrgUnitId(mis2ByOrgUnit, mergeOrgList);
-
-        var dataSet = makeMis4TableFormatAggr(mis2ByOrgUnit);
-        dispatch(addMIS4DataSet(dataSet));
-        dispatch(
-          setReportHeader(
-            zilla,
-            upazila,
-            values["monthpicker"].format("MMMM-YYYY")
-          )
-        );
-      });
+      }
+      mis2ByOrgUnit[unionId] = _.flatten(mis2ByOrgUnit[unionId]);
     });
+
+    const finalTableData = makeMis4TableFormatAggr(mis2ByOrgUnit);
+    setFinalReportData(finalTableData);
+  }, [mis2Raw, mis3Raw, allOrgUnits, selectedPeriod]);
+
+  const handleSubmit = (values) => {
+    const period = values.monthpicker.format("YYYYMM");
+    const monthStr = values.monthpicker.format("MMMM-YYYY");
+    setSelectedPeriod(period);
+    setMonthName(monthStr);
   };
 
+  if (loadingUser)
+    return (
+      <div style={{ textAlign: "center", padding: 100 }}>
+        <Spin size="large" />
+      </div>
+    );
+  if (!upazila)
+    return (
+      <div style={{ textAlign: "center", padding: 100, color: "red" }}>
+        উপজেলা অ্যাসাইন করা নেই
+      </div>
+    );
+
   return (
-    <div>
+    <div className="mis4tbl">
       <div className="criteria-holder">
         <Row type="flex" justify="center">
-          <Form
-            form={form}
-            layout="inline"
-            onFinish={handleSubmit}
-            initialValues={{ remember: true }}
-          >
-            <Form.Item
-              name="upazila"
-              label="উপজেলা"
-              rules={[
-                { required: true, message: "Please input your Upazila!" },
-              ]}
-            >
-              <Select size="large" style={{ width: 200 }}>
-                <Option value={upazillaData?.id}>{upazillaData?.displayName}</Option>
-              </Select>
+          <Form form={form} layout="inline" onFinish={handleSubmit}>
+            <Form.Item label="উপজেলা">
+              <div
+                style={{
+                  width: 220,
+                  padding: "4px 11px",
+                  background: "#fafafa",
+                  border: "1px solid #d9d9d9",
+                  borderRadius: 6,
+                }}
+              >
+                {upazilaName}
+              </div>
             </Form.Item>
+
             <Form.Item
               name="monthpicker"
               label="মাস"
-              rules={[{ required: true, message: "Please input your Month!" }]}
+              rules={[{ required: true, message: "মাস নির্বাচন করুন" }]}
             >
-              <MonthPicker size="large" format="MMMM-YYYY" />
+              <MonthPicker format="MMMM-YYYY" placeholder="মাস" />
             </Form.Item>
+
             <Form.Item>
-              {/* <Spin spinning={this.loader} indicator={antIcon} /> */}
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading2 || loading3}
+              >
                 View
               </Button>
             </Form.Item>
           </Form>
-          <PrintBtn></PrintBtn>
+          <PrintBtn />
         </Row>
       </div>
-      <hr />
-      <Mis4ReportTable
-        month={period}
-        zilla={zilla}
-        upazila={upazila}
-        data={mis4FinalDataAggr}
-      ></Mis4ReportTable>
 
-      <BackTop />
+      <hr />
+
+      {loading2 || loading3 ? (
+        <div style={{ textAlign: "center", padding: 60 }}>
+          <Spin size="large" tip="ডেটা লোড হচ্ছে..." />
+        </div>
+      ) : finalReportData.length > 0 ? (
+        <Mis4ReportTable
+          data={finalReportData}
+          upazila={upazilaName}
+          month={monthName}
+        />
+      ) : selectedPeriod ? (
+        <div style={{ textAlign: "center", padding: 60, color: "#999" }}>
+          এই মাসের জন্য কোনো তথ্য পাওয়া যায়নি
+        </div>
+      ) : null}
     </div>
   );
 };
