@@ -11,7 +11,6 @@ export const orgUnitApi = baseApi.injectEndpoints({
       },
       providesTags: ["OrganisationUnit"],
     }),
-
     getZillaByUser: builder.query({
       query: () => "/api/29/organisationUnits?userOnly=true&paging=false",
       providesTags: ["Zilla"],

@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { DatePicker, Select, Button, Form, Row, Spin, message } from "antd";
-import { useNavigate } from "react-router-dom";
-import moment from "moment";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useGetZillasQuery } from "../../redux/api/orgUnitApi";
 import { rejectSpecificWord } from "../../utils/Utils.jsx";
-
 const { MonthPicker } = DatePicker;
 const { Option } = Select;
 
 const Report = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const getgeo = useSelector((state) => state.getgeo);
 
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -47,13 +42,9 @@ const Report = () => {
 
     const newUrl = `https://mis.dgfp.gov.bd/ss/ss9/review_district/misform5_view9.php?month_id=${monthId}&dist_code=${distCode}`;
 
-    console.log("New URL", newUrl);
-
     setReportUrl(newUrl);
     setShowReport(true);
     setLoading(false);
-
-    console.log("Report loaded successfully!");
   };
 
   const handleDownloadPDF = async () => {
@@ -234,7 +225,7 @@ const Report = () => {
                 style={{ width: 200 }}
                 placeholder="Select District"
               >
-                {getgeo.zilla?.map((e, i) => (
+                {getgeo?.zilla?.map((e, i) => (
                   <Option key={e.id} value={e.id}>
                     {rejectSpecificWord(e.name, "district")}
                   </Option>
@@ -255,7 +246,7 @@ const Report = () => {
             </Form.Item>
 
             <Form.Item>
-              <Spin spinning={loading || getgeo.loading} />
+              <Spin spinning={loading || getgeo?.loading} />
             </Form.Item>
 
             <Form.Item>

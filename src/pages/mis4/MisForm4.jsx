@@ -42,6 +42,7 @@ const MisForm4 = () => {
       skip: !upazila?.id,
     });
 
+
   // ধাপ ৩: Organization units থেকে MIS2 এবং MIS3 filter করা
   const orgUnitDataSets = useMemo(() => {
     if (!userOrgUnitsData?.organisationUnits) {
@@ -70,7 +71,6 @@ const MisForm4 = () => {
     skip: !firstUnionId || !selectedPeriod,
   });
 
-  console.log("Zilla Data", zillaData);
   useEffect(() => {
     if (zillaData?.ancestors) {
       const zilla = zillaData.ancestors.find((a) => a.level === 3);
